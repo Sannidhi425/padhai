@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Padhai - Exam Revision Assistant</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f6fb; margin: 0; padding: 20px; color: #222; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 4px; }
+    .tagline { text-align: center; color: #666; margin-top: 0; }
+    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-top: 20px; }
+    input[type=file] { width: 100%; padding: 12px; border: 2px dashed #99a; border-radius: 8px; background: #fafbff; }
+    button { width: 100%; margin-top: 14px; padding: 12px; font-size: 16px; background: #4f46e5; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+    button:disabled { background: #a5a3e8; cursor: not-allowed; }
+    #status { margin-top: 14px; text-align: center; color: #4f46e5; font-weight: bold; }
+    #error { color: #c0392b; }
+    #result h1, #result h2, #result h3, #result h4 { margin-top: 20px; }
+    #result { line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Padhai</h1>
+    <p class="tagline">Upload your notes PDF. Get simple summary, daily-life examples, memory tricks and important questions.</p>
+
+    <div class="card">
+      <form id="form">
+        <input type="file" id="file" accept=".pdf" required>
+        <button type="submit" id="btn">Generate Study Notes</button>
+      </form>
+      <div id="status"></div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none;">
+      <div id="result"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("form");
+    const fileInput = document.getElementById("file");
+    const btn = document.getElementById("btn");
+    const statusEl = document.getElementById("status");
+    const resultCard = document.getElementById("resultCard");
+    const resultEl = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      btn.disabled = true;
+      resultCard.style.display = "none";
+      statusEl.id = "status";
+      statusEl.textContent = "Reading your notes and preparing study material... (20-40 seconds)";
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/upload", { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.innerHTML = '<span id="error">' + (data.detail || "Something went wrong") + "</span>";
+        } else {
+          statusEl.textContent = "";
+          resultEl.innerHTML = DOMPurify.sanitize(marked.parse(data.study_notes));
+          resultCard.style.display = "block";
+        }
+      } catch (err) {
+        statusEl.innerHTML = '<span id="error">Could not reach the server. Please try again.</span>';
+      }
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
