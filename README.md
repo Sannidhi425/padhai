@@ -2,6 +2,10 @@
 
 AI-powered exam revision assistant. Upload your college notes or syllabus PDF and get simple summaries, daily-life examples, memory tricks and important questions, ready for last-minute revision.
 
+## Live Demo
+
+ https://padhai-gj2m.onrender.com (first load may take about a minute)
+
 ## Features
 
 - Upload a text-based PDF of your notes
